@@ -1,3 +1,5 @@
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -14,12 +16,22 @@ var app = builder.Build();
 Configure(app, app.Environment);
 
 app.Run();
-// Add services to the container.
 
+// Add services to the container.
 void ConfigureServices(IServiceCollection services, IConfiguration configuration)
 {
+    services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+    });
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     services.AddEndpointsApiExplorer();
+
+    var keyVaultEndpoint = new Uri(configuration["VaultKey"]);
+    var secretClient = new SecretClient(keyVaultEndpoint, new DefaultAzureCredential());
+    KeyVaultSecret authority = secretClient.GetSecret("authority");
+    KeyVaultSecret audience = secretClient.GetSecret("audience");
 
     services.AddAuthentication(options =>
     {
@@ -27,27 +39,23 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
         options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
     }).AddJwtBearer(options =>
     {
-        options.Authority = configuration.GetValue<string>("ServerAuth:Authority");
-        options.Audience = configuration.GetValue<string>("ServerAuth:Audience");
+        options.Authority = authority.Value;
+        options.Audience = audience.Value;
         options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
         {
             NameClaimType = ClaimTypes.NameIdentifier
         };
     });
 
-    services.AddSwaggerGen();
+    KeyVaultSecret kvs = secretClient.GetSecret("blogbridgessecret2");
+    services.AddDbContext<DataContext>(o => o.UseSqlServer(kvs.Value));//////));
+
     services.AddScoped<IRoomsRepository, IMemRoomsRepository>();
     services.AddScoped<IPostsRepository, IMemPostsRepository>();
     services.AddScoped<ICommentsRepository, IMemCommentsRepository>();
     services.AddScoped<IRulesRepository, IMemRulesRepository>();
     services.AddScoped<IUsersRepository, IMemUsersRepository>();
-    services.AddControllers()
-        .AddJsonOptions(options=>
-        {
-            options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-        });
-
-    services.AddDbContext<DataContext>(o => o.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));//////));
+    
     services.AddCors(options =>
     {
         options.AddPolicy("AllowSpecificOrigin", builder =>
@@ -58,6 +66,7 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
                 .AllowAnyHeader();
         });
     });
+    services.AddSwaggerGen();
 }
 
 void Configure(IApplicationBuilder app, IHostEnvironment environment)

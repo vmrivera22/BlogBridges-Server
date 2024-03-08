@@ -1,4 +1,5 @@
 ﻿using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using restaurant_server.Entities;
@@ -18,16 +19,19 @@ public class PublicAuthController : ControllerBase
     [HttpGet("auth")]
     public ActionResult<PublicAuth> GetPublicAuth()
     {
-        string audience = _configuration.GetValue<string>("ClientAuth:Audience");
-        string domain = _configuration.GetValue<string>("ClientAuth:Domain");
-        string clientid = _configuration.GetValue<string>("ClientAuth:ClientId");
+        var keyVaultEndpoint = new Uri(_configuration["VaultKey"]);
+        var secretClient = new SecretClient(keyVaultEndpoint, new DefaultAzureCredential());
+
+        KeyVaultSecret audience = secretClient.GetSecret("audience");
+        KeyVaultSecret domain = secretClient.GetSecret("domain");
+        KeyVaultSecret clientid = secretClient.GetSecret("clientid");
 
         Console.WriteLine("Audience: " + audience);
         var publicAuth = new PublicAuth()
         {
-            Audience = audience,
-            Domain = domain,
-            ClientId = clientid
+            Audience = audience.Value,
+            Domain = domain.Value,
+            ClientId = clientid.Value
         };
         return Ok(publicAuth);
     }
