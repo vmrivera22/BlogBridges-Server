@@ -28,6 +28,7 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     services.AddEndpointsApiExplorer();
 
+    // Get secrets from key vault.
     var keyVaultEndpoint = new Uri(configuration["VaultKey"]);
     var secretClient = new SecretClient(keyVaultEndpoint, new DefaultAzureCredential());
     KeyVaultSecret authority = secretClient.GetSecret("authority");
