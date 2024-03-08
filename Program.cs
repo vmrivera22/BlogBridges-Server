@@ -48,7 +48,7 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
         };
     });
 
-    KeyVaultSecret kvs = secretClient.GetSecret("blogbridgessecret2");
+    KeyVaultSecret kvs = secretClient.GetSecret("secret3");
     services.AddDbContext<DataContext>(o => o.UseSqlServer(kvs.Value));//////));
 
     services.AddScoped<IRoomsRepository, IMemRoomsRepository>();
