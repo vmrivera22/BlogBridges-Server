@@ -84,6 +84,7 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     services.AddSwaggerGen();
 }
 
+// App config.
 void Configure(IApplicationBuilder app, IHostEnvironment environment)
 {
     app.UseSerilogRequestLogging();
