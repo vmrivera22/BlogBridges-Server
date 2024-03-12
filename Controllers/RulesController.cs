@@ -8,6 +8,8 @@ namespace WebBlog.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
+
+// Controller to send Auth0 information to the front end.
 public class RulesController : ControllerBase
 {
     private readonly IRulesRepository _repository;

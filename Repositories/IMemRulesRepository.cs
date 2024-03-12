@@ -13,6 +13,7 @@ public class IMemRulesRepository : IRulesRepository
         _data = data;
     }
 
+    // Get all the rules for a room.
     public async Task<List<Rule>> GetAll(int roomId)
     {
         try
@@ -30,6 +31,7 @@ public class IMemRulesRepository : IRulesRepository
         }
     }
 
+    // Get a single rule given its id.
     public async Task<Rule> GetOne(int id)
     {
         try
@@ -43,6 +45,7 @@ public class IMemRulesRepository : IRulesRepository
         }
     }
 
+    // Create a rule.
     public async Task<Rule> AddOne(CreateRuleDto rule)
     {
         try
@@ -60,6 +63,7 @@ public class IMemRulesRepository : IRulesRepository
         }
     }
 
+    // Update a rooms rules - deletes rules that no longer apply, adds new rules, and edits rules.
     public async Task UpdateOne(UpdateRuleDto rule)
     {
         try
@@ -94,6 +98,8 @@ public class IMemRulesRepository : IRulesRepository
             throw;
         }
     }
+
+    // Delete a rule.
     public async Task DeleteOne(int id)
     {
         try

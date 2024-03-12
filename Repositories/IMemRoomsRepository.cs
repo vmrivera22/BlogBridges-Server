@@ -15,6 +15,7 @@ public class IMemRoomsRepository : IRoomsRepository
         _data = data;
     }
 
+    // Get all rooms
     public async Task<List<Room>> GetAll()
     {
         try
@@ -28,6 +29,7 @@ public class IMemRoomsRepository : IRoomsRepository
         }
     }
 
+    // Get a single room and include a page of posts.
     public async Task<Room> GetOne(int Id, int pageIndex)
     {
         try
@@ -102,6 +104,7 @@ public class IMemRoomsRepository : IRoomsRepository
         }
     }
 
+    // Create a room.
     public async Task<Room> AddOne(CreateRoomDto room)
     {
         try
@@ -119,6 +122,7 @@ public class IMemRoomsRepository : IRoomsRepository
         }
     }
 
+    // Update a room.
     public async Task UpdateOne(UpdateRoomDto room)
     {
         try
@@ -136,7 +140,8 @@ public class IMemRoomsRepository : IRoomsRepository
         }
     }
 
-
+    
+    // Delete a room.
     public async Task DeleteOne(int id)
     {
         try
@@ -145,11 +150,14 @@ public class IMemRoomsRepository : IRoomsRepository
                 .Include(p => p.Rules)
                 .FirstOrDefaultAsync(p=>p.Id == id);
 
+            // Delete a rooms posts.
             for (int i = room.Posts.Count - 1; i >= 0; i--)
             {
                 var post = room.Posts[i];
                 await _posts.DeleteOne(post.Id);
             }
+
+            // Delete a rooms rules.
             for (int i = room.Rules.Count - 1; i>=0; i--)
             {
                 _data.Remove(room.Rules[i]);

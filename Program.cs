@@ -11,6 +11,8 @@ using WebBlog.Repositories;
 using WebBlog.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Get connection string to logger from key vault.
 var keyVaultEndpoint = new Uri(builder.Configuration["VaultKey"]);
 var secretClient = new SecretClient(keyVaultEndpoint, new DefaultAzureCredential());
 KeyVaultSecret log = secretClient.GetSecret("log");
@@ -39,7 +41,7 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     {
         options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
     });
-    // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
     services.AddEndpointsApiExplorer();
 
     // Get secrets from key vault.
@@ -61,7 +63,7 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
     });
 
     KeyVaultSecret kvs = secretClient.GetSecret("secret");
-    services.AddDbContext<DataContext>(o => o.UseSqlServer(kvs.Value));//////));
+    services.AddDbContext<DataContext>(o => o.UseSqlServer(kvs.Value));
 
     services.AddScoped<IRoomsRepository, IMemRoomsRepository>();
     services.AddScoped<IPostsRepository, IMemPostsRepository>();

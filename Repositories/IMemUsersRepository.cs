@@ -13,6 +13,7 @@ public class IMemUsersRepository : IUsersRepository
         _data = data;
     }
 
+    // Get a user given a username.
     public async Task<User> GetOne(string userName)
     {
         try
@@ -27,6 +28,7 @@ public class IMemUsersRepository : IUsersRepository
         }
     }
 
+    // Get a user and include a page of user posts.
     public async Task<User> GetOnePosts(string userName, int pageIndex)
     {
         try
@@ -46,6 +48,7 @@ public class IMemUsersRepository : IUsersRepository
         }
     }
 
+    // Update a user - namely their profile avatar.
     public async Task UpdateOne(UpdateUserDto user)
     {
         try

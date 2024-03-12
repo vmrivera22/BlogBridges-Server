@@ -14,6 +14,7 @@ public class IMemPostsRepository : IPostsRepository
         _data = data;
     }
 
+    // Get a page worth of posts (5) from any room.
     public async Task<List<Post>> GetAll(int pageIndex)
     {
         int pageSize = 5;
@@ -26,6 +27,7 @@ public class IMemPostsRepository : IPostsRepository
         return posts;
     }
 
+    // Get a page (5) worth of posts from a specific room.
     public async Task<List<Post>> GetAllRoom(int roomId, int pageIndex)
     {
         try
@@ -48,6 +50,7 @@ public class IMemPostsRepository : IPostsRepository
         }
     }
 
+    // Get a single post.
     public async Task<Post> GetOne(int id)
     {
         try
@@ -62,6 +65,7 @@ public class IMemPostsRepository : IPostsRepository
         }
     }
 
+    // Create a new post and relate it to a room and user.
     public async Task<Post> AddOne(CreatePostDto post)
     {
         try
@@ -80,6 +84,7 @@ public class IMemPostsRepository : IPostsRepository
         }
     }
 
+    // Update an existing post.
     public async Task UpdateOne(UpdatePostDto post)
     {
         try
@@ -97,6 +102,7 @@ public class IMemPostsRepository : IPostsRepository
         }
     }
 
+    // Funcion deletes comments for a post - Cascade was not working.
     public async Task DeleteCommentAndReplies(Comment comment)
     {
         foreach(var reply in comment.Comments)
@@ -106,6 +112,7 @@ public class IMemPostsRepository : IPostsRepository
         _data.Comments.Remove(comment);
     }
 
+    // Delete a post form the database.
     public async Task DeleteOne(int id)
     {
         try

@@ -14,6 +14,7 @@ public class IMemCommentsRepository : ICommentsRepository
         _data = data;
     }
 
+    // Gets all the comments.
     public async Task<List<Comment>> GetAll(int PostId)
     {
         try
@@ -27,6 +28,7 @@ public class IMemCommentsRepository : ICommentsRepository
         }
     }
 
+    // Recursively gets children comments - takes 5 maximun for simplicity.
     public async Task<List<Comment>> GetAllCommentsAndRepliesRecursive(int? ParentId, int PostId)
     {
         try
@@ -53,6 +55,7 @@ public class IMemCommentsRepository : ICommentsRepository
         }   
     }
 
+    // Adds a comment to the database and relates it to a post and user.
     public async Task<Comment> AddOne(CreateCommentDto comment)
     {
         try
@@ -81,6 +84,7 @@ public class IMemCommentsRepository : ICommentsRepository
         }
     }
 
+    // Deletes a post.
     public async Task DeleteOne(int id)
     {
         try

@@ -19,15 +19,15 @@ public class PostsController : ControllerBase
     public async Task<ActionResult<List<Post>>> GetAllRoom(int room, int id, int page)
     {
         List<Post> posts = [];
-        if (room == -1 && id == -1)
+        if (room == -1 && id == -1) // Get a page worth of posts from any room.
         {
             posts = await _repository.GetAll(page);
         }
-        else if (room != -1 && id == -1)
+        else if (room != -1 && id == -1) // Get a page worth of posts from a specified room.
         {
             posts = await _repository.GetAllRoom(room, page);
         }
-        else if (id != -1)
+        else if (id != -1) // Get a single post.
         {
             Post post = await _repository.GetOne(id);
             posts.Add(post);
