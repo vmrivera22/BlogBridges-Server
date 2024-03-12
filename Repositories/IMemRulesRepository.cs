@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Serilog;
 using WebBlog.Data;
 using WebBlog.Entities;
 
@@ -14,17 +15,32 @@ public class IMemRulesRepository : IRulesRepository
 
     public async Task<List<Rule>> GetAll(int roomId)
     {
-        List<Rule> rules = await _data.Rules.Include(o => o.Room)
-            .Where(o => o.Room.Id == roomId)
-            .OrderBy(o => o.Order)
-            .ToListAsync();
-        return rules;
+        try
+        {
+            List<Rule> rules = await _data.Rules.Include(o => o.Room)
+                .Where(o => o.Room.Id == roomId)
+                .AsNoTracking()
+                .OrderBy(o => o.Order)
+                .ToListAsync();
+            return rules;
+        }
+        catch (Exception ex) {
+            Log.Error("Error fetching rules. {@error}", ex.Message);
+            throw;
+        }
     }
 
     public async Task<Rule> GetOne(int id)
     {
-        Rule rule = await _data.Rules.FindAsync(id);
-        return rule;
+        try
+        {
+            Rule rule = await _data.Rules.FindAsync(id);
+            return rule;
+        }
+        catch (Exception ex) {
+            Log.Error("Error fetching rule. {@error}", ex.Message);
+            throw;
+        }
     }
 
     public async Task<Rule> AddOne(CreateRuleDto rule)
@@ -39,6 +55,7 @@ public class IMemRulesRepository : IRulesRepository
         }
         catch (Exception ex)
         {
+            Log.Error("Error creating rule. {@error}", ex.Message);
             throw;
         }
     }
@@ -73,6 +90,7 @@ public class IMemRulesRepository : IRulesRepository
         }
         catch (Exception ex)
         {
+            Log.Error("Error updating rule. {@error}", ex.Message);
             throw;
         }
     }
@@ -86,6 +104,7 @@ public class IMemRulesRepository : IRulesRepository
         }
         catch (Exception ex)
         {
+            Log.Error("Error deleting rule. {@error}", ex.Message);
             throw;
         }
     }

@@ -11,7 +11,7 @@ public class Room
 
     public User User { get; set; }
 
-    public List<Post> Posts { get; } = [];
+    public List<Post> Posts { get; set; } = [];
 
-    public List<Rule> Rules { get; } = [];
+    public List<Rule> Rules { get; set; } = [];
 }

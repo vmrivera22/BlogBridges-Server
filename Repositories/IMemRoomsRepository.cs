@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Serilog;
 using WebBlog.Data;
 using WebBlog.Entities;
 using WebBlog.Repository;
@@ -16,38 +17,104 @@ public class IMemRoomsRepository : IRoomsRepository
 
     public async Task<List<Room>> GetAll()
     {
-        List<Room> rooms = await _data.Rooms.Include(r=>r.User).ToListAsync();
-        return rooms;
+        try
+        {
+            List<Room> rooms = await _data.Rooms.AsNoTracking().ToListAsync();
+            return rooms;
+        }
+        catch (Exception ex) {
+            Log.Error("Error fetching rooms. {@error}", ex.Message);
+            throw;
+        }
     }
 
     public async Task<Room> GetOne(int Id, int pageIndex)
     {
-        int pageSize = 5;
-        Room room = await _data.Rooms.Include(r => r.Posts.OrderByDescending(p => p.DatePosted).Skip((pageIndex - 1) * pageSize).Take(pageSize))
-            .ThenInclude(p => p.User)
-            .Include(r=>r.User)
-            .FirstOrDefaultAsync(r => r.Id == Id);
-
-        //Room room = await _data.Rooms.Include(r=>r.User).FirstOrDefaultAsync(r=>r.Id == Id);
-        return room;
+        try
+        {
+            int pageSize = 5;
+            var roomData = await _data.Rooms
+                .Where(r => r.Id == Id)
+                .Select(r => new
+                {
+                    Room = new
+                    {
+                        r.Id,
+                        r.Name,
+                        r.Description,
+                        User = new
+                        {
+                            r.User.Id,
+                            r.User.UserName,
+                            r.User.ImageUrl
+                        }
+                    },
+                    Posts = r.Posts
+                    .OrderByDescending(p => p.DatePosted)
+                    .Skip((pageIndex - 1) * pageSize)
+                    .Take(pageSize)
+                    .Select(p => new
+                    {
+                        p.Id,
+                        p.Title,
+                        p.Body,
+                        p.Image,
+                        p.DatePosted,
+                        User = new
+                        {
+                            p.User.Id,
+                            p.User.UserName,
+                            p.User.ImageUrl
+                        }
+                    })
+                    .ToList()
+                })
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+ 
+                // Map the anonymous type to the Room class
+                var room = new Room
+                {
+                    Id = roomData.Room.Id,
+                    Name = roomData.Room.Name,
+                    Description = roomData.Room.Description,
+                    Posts = roomData.Posts.Select(post => new Post
+                    {
+                        Id = post.Id,
+                        Title = post.Title,
+                        Body = post.Body,
+                        Image = post.Image,
+                        DatePosted = post.DatePosted,
+                        User = new User
+                        {
+                            Id = post.User.Id,
+                            UserName = post.User.UserName,
+                            ImageUrl = post.User.ImageUrl
+                        }
+                    }).ToList()
+                };
+            return room;
+        }
+        catch (Exception ex)
+        {
+            Log.Error("Error fetching room. {@error}", ex.Message);
+            throw;
+        }
     }
 
     public async Task<Room> AddOne(CreateRoomDto room)
     {
         try
         {
-            User user = await _data.Users.FirstOrDefaultAsync(u => u.UserName == room.UserName);
-            if(user is null)
-            {
-                user = new User() { UserName = room.UserName};
-            }
+            User user = await _data.Users.FirstOrDefaultAsync(u => u.UserName == room.UserName) ?? new User() { UserName = room.UserName };
             Room newRoom = new Room() { Name=room.Name, Description=room.Description, User=user};
             _data.Rooms.Add(newRoom);
             await _data.SaveChangesAsync();
             return newRoom;
         }
-        catch
+        catch(Exception ex)
         {
+            Log.Error("Error creating room. {@error}", ex.Message);
             throw;
         }
     }
@@ -62,7 +129,11 @@ public class IMemRoomsRepository : IRoomsRepository
             await _data.SaveChangesAsync();
             return;
         }
-        catch { throw; }
+        catch (Exception ex) 
+        {
+            Log.Error("Error updating room. {@error}", ex.Message);
+            throw; 
+        }
     }
 
 
@@ -87,6 +158,10 @@ public class IMemRoomsRepository : IRoomsRepository
             await _data.SaveChangesAsync();
             return;
         }
-        catch { throw; }
+        catch (Exception ex)
+        {
+            Log.Error("Error deleting room. {@error}", ex.Message);
+            throw; 
+        }
     }
 }

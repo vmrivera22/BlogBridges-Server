@@ -27,6 +27,9 @@ public class DataContext : DbContext
             .HasForeignKey("PostId")
             .IsRequired(false)
             .OnDelete(DeleteBehavior.ClientCascade);
+        builder.Entity<Post>()
+            .HasIndex(e => e.DatePosted)
+            .HasName("IX_DatePosted");
         builder.Entity<Comment>()
             .HasOne(e=>e.ParentComment)
             .WithMany(e=>e.Comments)

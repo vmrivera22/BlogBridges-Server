@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Serilog;
 using WebBlog.Data;
 using WebBlog.Entities;
 
@@ -17,7 +18,8 @@ public class IMemPostsRepository : IPostsRepository
     {
         int pageSize = 5;
         List<Post> posts = await _data.Posts.OrderByDescending(p => p.DatePosted)
-            .Include(p=>p.User)
+            .Include(p => p.User)
+            .AsNoTracking()
             .Skip((pageIndex - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
@@ -26,26 +28,36 @@ public class IMemPostsRepository : IPostsRepository
 
     public async Task<List<Post>> GetAllRoom(int roomId, int pageIndex)
     {
-        int pageSize = 5;
-        List<Post> posts = await _data.Posts.Include(o=>o.Room)
-            .Where(o=>o.Room.Id == roomId)
-            .OrderByDescending(p => p.DatePosted)
-            .Include(p=>p.User)
-            .Skip((pageIndex - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-        return posts;
+        try
+        {
+            int pageSize = 5;
+            List<Post> posts = await _data.Posts.Include(o => o.Room)
+                .Where(o => o.Room.Id == roomId)
+                .OrderByDescending(p => p.DatePosted)
+                .Include(p => p.User)
+                .AsNoTracking()
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+            return posts;
+        }
+        catch (Exception ex)
+        {
+            Log.Error("Error fetching posts. {@error}", ex.Message);
+            throw;
+        }
     }
 
     public async Task<Post> GetOne(int id)
     {
         try
         {
-            Post post = await _data.Posts.Include(p=>p.User).FirstOrDefaultAsync(p=>p.Id == id);
+            Post post = await _data.Posts.Include(p=>p.User).AsNoTracking().FirstOrDefaultAsync(p=>p.Id == id);
             return post;
         }
         catch (Exception ex)
         {
+            Log.Error("Error fetching post. {@error}", ex.Message);
             throw;
         }
     }
@@ -55,11 +67,7 @@ public class IMemPostsRepository : IPostsRepository
         try
         {
             Room room = await _data.Rooms.FindAsync(post.RoomId);
-            User user = await _data.Users.FirstOrDefaultAsync(u => u.UserName == post.Author);
-            if (user == null)
-            {
-                user = new User() { UserName=post.Author };
-            }
+            User user = await _data.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserName == post.Author) ?? new User() { UserName = post.Author };
             Post newPost = new Post() { Title=post.Title, Body=post.Body, Image=post.Image, Room=room, RoomId=room.Id, User=user};
             await _data.Posts.AddAsync(newPost);
             await _data.SaveChangesAsync();
@@ -67,6 +75,7 @@ public class IMemPostsRepository : IPostsRepository
         }
         catch (Exception ex)
         {
+            Log.Error("Error creating post. {@error}", ex.Message);
             throw;
         }
     }
@@ -83,6 +92,7 @@ public class IMemPostsRepository : IPostsRepository
         }
         catch (Exception ex)
         {
+            Log.Error("Error updating post. {@error}", ex.Message);
             throw;
         }
     }
@@ -103,6 +113,7 @@ public class IMemPostsRepository : IPostsRepository
             Post post = await _data.Posts.Include(p => p.Comments)
             .FirstOrDefaultAsync(p => p.Id == id);
 
+
             foreach (var comment in post.Comments)
             {
                 await DeleteCommentAndReplies(comment);
@@ -112,6 +123,7 @@ public class IMemPostsRepository : IPostsRepository
         }
         catch(Exception ex)
         {
+            Log.Error("Error deleting post. {@error}", ex.Message);
             throw;
         }
     }
