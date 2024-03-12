@@ -80,6 +80,12 @@ public class IMemRoomsRepository : IRoomsRepository
                     Id = roomData.Room.Id,
                     Name = roomData.Room.Name,
                     Description = roomData.Room.Description,
+                    User = new User 
+                    { 
+                        Id=roomData.Room.User.Id, 
+                        ImageUrl=roomData.Room.User.ImageUrl, 
+                        UserName=roomData.Room.User.UserName 
+                    },
                     Posts = roomData.Posts.Select(post => new Post
                     {
                         Id = post.Id,
