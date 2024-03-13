@@ -76,7 +76,7 @@ void ConfigureServices(IServiceCollection services, IConfiguration configuration
         options.AddPolicy("AllowSpecificOrigin", builder =>
         {
             var corsOrigins = configuration.GetSection("CorsOrigins").Get<string[]>();
-            builder.WithOrigins(corsOrigins)
+            builder.AllowAnyOrigin()//WithOrigins(corsOrigins)
                 .AllowAnyMethod()
                 .AllowAnyHeader();
         });
