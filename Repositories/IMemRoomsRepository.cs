@@ -115,7 +115,11 @@ public class IMemRoomsRepository : IRoomsRepository
     {
         try
         {
-            User user = await _data.Users.FirstOrDefaultAsync(u => u.UserName == room.UserName) ?? new User() { UserName = room.UserName };
+            User user = await _data.Users.FirstOrDefaultAsync(u => u.UserName == room.UserName);
+            if (user is null)
+            {
+                user = new User() { UserName = room.UserName };
+            }
             Room newRoom = new Room() { Name=room.Name, Description=room.Description, User=user};
             _data.Rooms.Add(newRoom);
             await _data.SaveChangesAsync();

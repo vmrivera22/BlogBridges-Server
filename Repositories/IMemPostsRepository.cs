@@ -71,8 +71,12 @@ public class IMemPostsRepository : IPostsRepository
         try
         {
             Room room = await _data.Rooms.FindAsync(post.RoomId);
-            User user = await _data.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserName == post.Author) ?? new User() { UserName = post.Author };
-            Post newPost = new Post() { Title=post.Title, Body=post.Body, Image=post.Image, Room=room, RoomId=room.Id, User=user};
+            User user = await _data.Users.FirstOrDefaultAsync(u => u.UserName == post.Author);
+            if (user == null)
+            {
+                user = new User() { UserName = post.Author };
+            }
+            Post newPost = new Post() { Title = post.Title, Body = post.Body, Image = post.Image, Room = room, RoomId = room.Id, User = user };
             await _data.Posts.AddAsync(newPost);
             await _data.SaveChangesAsync();
             return newPost;

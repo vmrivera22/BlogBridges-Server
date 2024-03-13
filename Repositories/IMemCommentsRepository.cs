@@ -62,7 +62,12 @@ public class IMemCommentsRepository : ICommentsRepository
         {
             Comment parent = await _data.Comments.FindAsync(comment.ParentId);
             Post post = await _data.Posts.FindAsync(comment.PostId);
-            User user = await _data.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserName == comment.Author) ?? new User() { UserName = comment.Author };
+            User User = await _data.Users.FirstOrDefaultAsync(u => u.UserName == comment.Author);
+
+            if (User == null)
+            {
+                User = new User() { UserName = comment.Author };
+            }
             Comment newComment;
             if (parent != null)
             {
