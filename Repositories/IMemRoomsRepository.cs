@@ -156,9 +156,13 @@ public class IMemRoomsRepository : IRoomsRepository
     {
         try
         {
-            Room room = await _data.Rooms.Include(p => p.Posts)
+            var room = await _data.Rooms.Include(p => p.Posts)
                 .Include(p => p.Rules)
                 .FirstOrDefaultAsync(p=>p.Id == id);
+            if(room == null)
+            {
+                return;
+            }
 
             // Delete a rooms posts.
             for (int i = room.Posts.Count - 1; i >= 0; i--)

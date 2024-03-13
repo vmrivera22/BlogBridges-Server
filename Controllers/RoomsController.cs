@@ -28,7 +28,6 @@ public class RoomsController : ControllerBase
         return Ok(room);
     }
 
-    [Authorize]
     [HttpPost]
     public async Task<ActionResult<Room>> AddOne(CreateRoomDto room)
     {
