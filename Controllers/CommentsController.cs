@@ -23,7 +23,8 @@ public class CommentsController : ControllerBase
         return Ok(comments);
     }
 
-   
+
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<Comment>> AddOneComment(CreateCommentDto comment)
     {

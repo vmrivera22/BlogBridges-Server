@@ -35,6 +35,7 @@ public class PostsController : ControllerBase
         return Ok(posts);
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<ActionResult<Post>> AddOne(CreatePostDto post)
     {
